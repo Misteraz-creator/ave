@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ave Maria (Bepi De Marzi) - Studio Corale SATB</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        soprano: '#ec4899',
+                        alto: '#a855f7',
+                        tenor: '#3b82f6',
+                        bass: '#10b981',
+                        coralGold: '#f59e0b',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .note-active {
+            filter: drop-shadow(0px 0px 8px currentColor);
+        }
+        .syllable-active {
+            background-color: #f59e0b;
+            color: #0f172a;
+            font-weight: 700;
+            border-radius: 0.25rem;
+            transform: scale(1.15);
+            display: inline-block;
+            transition: all 0.1s ease;
+        }
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans flex flex-col justify-between selection:bg-amber-500 selection:text-slate-950">
+
+    <!-- Header Principale -->
+    <header class="bg-slate-900/90 border-b border-slate-800 backdrop-blur sticky top-0 z-50 px-4 py-3">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-3">
+            <div class="flex items-center space-x-3">
+                <div class="bg-amber-500/20 text-amber-400 p-2.5 rounded-xl border border-amber-500/30 shadow-inner">
+                    <i class="fa-solid fa-music text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg md:text-xl font-bold tracking-tight text-white flex items-center gap-2">
+                        Ave Maria <span class="text-xs bg-amber-500/20 text-amber-300 border border-amber-500/30 px-2 py-0.5 rounded-full font-normal">Bepi De Marzi</span>
+                    </h1>
+                    <p class="text-xs text-slate-400">Piattaforma d'Esercitazione Corale SATB con Karaoke Sincronizzato</p>
+                </div>
+            </div>
+
+            <!-- Pulsanti Selezione Rapida Sezione -->
+            <div class="flex flex-wrap justify-center gap-1.5 bg-slate-950/80 p-1.5 rounded-xl border border-slate-800">
+                <button onclick="selectPreset('ALL')" id="preset-ALL" class="preset-btn px-3 py-1.5 rounded-lg text-xs font-semibold transition bg-amber-500 text-slate-950 shadow">
+                    Tutti (Full Choir)
+                </button>
+                <button onclick="selectPreset('S')" id="preset-S" class="preset-btn px-3 py-1.5 rounded-lg text-xs font-medium transition text-slate-300 hover:bg-slate-800">
+                    Solo Soprani
+                </button>
+                <button onclick="selectPreset('C')" id="preset-C" class="preset-btn px-3 py-1.5 rounded-lg text-xs font-medium transition text-slate-300 hover:bg-slate-800">
+                    Solo Contralti
+                </button>
+                <button onclick="selectPreset('T')" id="preset-T" class="preset-btn px-3 py-1.5 rounded-lg text-xs font-medium transition text-slate-300 hover:bg-slate-800">
+                    Solo Tenori
+                </button>
+                <button onclick="selectPreset('B')" id="preset-B" class="preset-btn px-3 py-1.5 rounded-lg text-xs font-medium transition text-slate-300 hover:bg-slate-800">
+                    Solo Bassi
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="max-w-7xl w-full mx-auto p-4 flex-grow space-y-6">
+
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            
+            <!-- Pannello Riproduttore & Controlli Studio -->
+            <div class="lg:col-span-1 bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl flex flex-col justify-between space-y-5">
+                <div>
+                    <h2 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4 flex items-center justify-between">
+                        <span><i class="fa-solid fa-sliders text-amber-400 mr-2"></i> Controlli Esercitazione</span>
+                        <span id="audio-status" class="text-[10px] font-medium text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">Pronto</span>
+                    </h2>
+
+                    <!-- Main Transport Controls -->
+                    <div class="flex items-center justify-center gap-3 mb-5">
+                        <button id="btn-stop" onclick="stopAudio()" title="Stop e Riavvolgi" class="w-11 h-11 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center transition active:scale-95 border border-slate-700">
+                            <i class="fa-solid fa-stop text-base"></i>
+                        </button>
+                        <button id="btn-play" onclick="togglePlay()" class="w-16 h-16 rounded-full bg-amber-500 hover:bg-amber-400 text-slate-950 flex items-center justify-center transition active:scale-95 shadow-lg shadow-amber-500/20">
+                            <i id="play-icon" class="fa-solid fa-play text-2xl ml-1"></i>
+                        </button>
+                        <button id="btn-loop" onclick="toggleLoop()" id="loop-toggle" title="Attiva/Disattiva Loop Battuta" class="w-11 h-11 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-400 flex items-center justify-center transition active:scale-95 border border-slate-700">
+                            <i id="loop-icon" class="fa-solid fa-repeat text-base"></i>
+                        </button>
+                    </div>
+
+                    <!-- Progresso Traccia -->
+                    <div class="space-y-1 mb-5">
+                        <div class="flex justify-between text-xs text-slate-400 font-mono">
+                            <span id="time-current">00:00</span>
+                            <span id="time-total">00:00</span>
+                        </div>
+                        <input type="range" id="seek-bar" min="0" max="100" value="0" step="0.1" oninput="seekTo(this.value)" class="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-amber-500">
+                    </div>
+
+                    <!-- Regolazione Tempo e Tonalità -->
+                    <div class="space-y-4 pt-4 border-t border-slate-800">
+                        <div>
+                            <label class="text-xs text-slate-400 block mb-1.5 flex justify-between">
+                                <span><i class="fa-solid fa-gauge mr-1"></i> Tempo (BPM)</span>
+                                <span id="bpm-val" class="font-bold text-amber-400 font-mono">60</span>
+                            </label>
+                            <input type="range" id="bpm-slider" min="40" max="90" value="60" oninput="updateBPM(this.value)" class="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-amber-500">
+                        </div>
+
+                        <div>
+                            <label class="text-xs text-slate-400 block mb-1.5 flex justify-between">
+                                <span><i class="fa-solid fa-music mr-1"></i> Trasposizione</span>
+                                <span id="key-val" class="font-bold text-amber-400">FA magg.</span>
+                            </label>
+                            <select id="transpose-select" onchange="updateTranspose(this.value)" class="w-full bg-slate-950 border border-slate-800 text-xs rounded-lg p-2 text-slate-200 focus:outline-none focus:border-amber-500">
+                                <option value="-2">-2 semitoni (MIb)</option>
+                                <option value="-1">-1 semitono (MI)</option>
+                                <option value="0" selected>Tonalità Originale (FA)</option>
+                                <option value="1">+1 semitono (FA#)</option>
+                                <option value="2">+2 semitoni (SOL)</option>
+                            </select>
+                        </div>
+
+                        <!-- Selezione Vista Pentagrammi -->
+                        <div>
+                            <label class="text-xs text-slate-400 block mb-1.5"><i class="fa-solid fa-eye mr-1"></i> Vista Partitura</label>
+                            <select id="view-mode" onchange="changeViewMode(this.value)" class="w-full bg-slate-950 border border-slate-800 text-xs rounded-lg p-2 text-slate-200 focus:outline-none focus:border-amber-500">
+                                <option value="ALL">Mostra tutti i 4 Pentagrammi (SATB)</option>
+                                <option value="S">Mostra solo Pentagramma Soprani</option>
+                                <option value="C">Mostra solo Pentagramma Contralti</option>
+                                <option value="T">Mostra solo Pentagramma Tenori</option>
+                                <option value="B">Mostra solo Pentagramma Bassi</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Timbro Vocale -->
+                <div class="pt-4 border-t border-slate-800">
+                    <label class="text-xs text-slate-400 block mb-1">Suono Sintetizzatore</label>
+                    <select id="synth-sound" onchange="changeSynthSound(this.value)" class="w-full bg-slate-950 border border-slate-800 text-xs rounded-lg p-2 text-slate-200 focus:outline-none focus:border-amber-500">
+                        <option value="organ">Organo a Canne Chiese</option>
+                        <option value="warm">Voci Calde (Ah Synth)</option>
+                        <option value="piano">Pianoforte Digitale</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Area Spartito Dinamico & Cursore Karaoke -->
+            <div class="lg:col-span-3 bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl flex flex-col justify-between space-y-4">
+                
+                <!-- Intestazione Display Karaoke -->
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 pb-2 border-b border-slate-800">
+                    <div class="flex items-center gap-2">
+                        <i class="fa-solid fa-book-open text-amber-400"></i>
+                        <h3 class="text-sm font-semibold text-slate-200">Spartito Polifonico Interattivo con Cursore Scorrevole</h3>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <span id="measure-counter" class="text-xs font-mono bg-slate-950 text-slate-300 px-3 py-1 rounded-md border border-slate-800">
+                            Battuta: <strong class="text-amber-400">1</strong> / 15
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Display Pentagramma Grafico SVG Scorrevole -->
+                <div class="bg-slate-950 rounded-xl p-4 border border-slate-800/80 relative overflow-x-auto min-h-[380px] flex items-center">
+                    <svg id="stave-svg" viewBox="0 0 1150 360" class="w-full min-w-[900px] h-auto">
+                        <!-- Sfondi Pentagrammi generati via JS -->
+                        <g id="staves-background"></g>
+
+                        <!-- Note e Simboli Musicali generati via JS -->
+                        <g id="notes-container"></g>
+
+                        <!-- Cursore Karaoke Scorrevole Vertabile -->
+                        <line id="karaoke-cursor" x1="100" y1="10" x2="100" y2="350" stroke="#f59e0b" stroke-width="3" stroke-dasharray="4,2" class="opacity-0 transition-all duration-75"/>
+                    </svg>
+                </div>
+
+                <!-- Scorrimento Testo e Sillabe Sincronizzate sotto il pentagramma -->
+                <div class="bg-slate-950/80 rounded-xl p-4 border border-slate-800 text-center min-h-[80px] flex flex-col items-center justify-center">
+                    <p class="text-[10px] text-slate-500 uppercase tracking-widest mb-1">Testo Sincronizzato con il Cursore</p>
+                    <div id="karaoke-text" class="text-base md:text-lg font-medium text-slate-300 leading-relaxed tracking-wide space-x-1.5 overflow-x-auto max-w-full py-1">
+                        <!-- Generato dinamicamente -->
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Mixer Volumi Voci (SATB) -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl">
+            <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4 flex items-center justify-between">
+                <span><i class="fa-solid fa-sliders text-amber-400 mr-2"></i> Mixer Volumi e Isolamento Voci (SATB)</span>
+                <span class="text-[11px] font-normal text-slate-500">Regola per ascoltare la tua voce più forte delle altre</span>
+            </h3>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                
+                <!-- Soprani -->
+                <div class="bg-slate-950 p-4 rounded-xl border border-pink-500/30 flex flex-col justify-between space-y-3">
+                    <div class="flex justify-between items-center">
+                        <span class="font-bold text-pink-400 flex items-center gap-2 text-sm">
+                            <span class="w-2.5 h-2.5 rounded-full bg-pink-500 inline-block"></span> Soprani (S)
+                        </span>
+                        <button onclick="toggleMute('S')" id="mute-S" class="text-xs text-slate-400 hover:text-pink-400 px-2 py-0.5 rounded bg-slate-900 border border-slate-800">
+                            Mute
+                        </button>
+                    </div>
+                    <div class="space-y-1">
+                        <div class="flex justify-between text-xs text-slate-400 font-mono">
+                            <span>Vol</span>
+                            <span id="vol-txt-S">100%</span>
+                        </div>
+                        <input type="range" id="vol-S" min="0" max="100" value="100" oninput="updateVolume('S', this.value)" class="w-full h-2 bg-slate-900 rounded-lg appearance-none cursor-pointer accent-pink-500">
+                    </div>
+                </div>
+
+                <!-- Contralti -->
+                <div class="bg-slate-950 p-4 rounded-xl border border-purple-500/30 flex flex-col justify-between space-y-3">
+                    <div class="flex justify-between items-center">
+                        <span class="font-bold text-purple-400 flex items-center gap-2 text-sm">
+                            <span class="w-2.5 h-2.5 rounded-full bg-purple-500 inline-block"></span> Contralti (C)
+                        </span>
+                        <button onclick="toggleMute('C')" id="mute-C" class="text-xs text-slate-400 hover:text-purple-400 px-2 py-0.5 rounded bg-slate-900 border border-slate-800">
+                            Mute
+                        </button>
+                    </div>
+                    <div class="space-y-1">
+                        <div class="flex justify-between text-xs text-slate-400 font-mono">
+                            <span>Vol</span>
+                            <span id="vol-txt-C">100%</span>
+                        </div>
+                        <input type="range" id="vol-C" min="0" max="100" value="100" oninput="updateVolume('C', this.value)" class="w-full h-2 bg-slate-900 rounded-lg appearance-none cursor-pointer accent-purple-500">
+                    </div>
+                </div>
+
+                <!-- Tenori -->
+                <div class="bg-slate-950 p-4 rounded-xl border border-blue-500/30 flex flex-col justify-between space-y-3">
+                    <div class="flex justify-between items-center">
+                        <span class="font-bold text-blue-400 flex items-center gap-2 text-sm">
+                            <span class="w-2.5 h-2.5 rounded-full bg-blue-500 inline-block"></span> Tenori (T)
+                        </span>
+                        <button onclick="toggleMute('T')" id="mute-T" class="text-xs text-slate-400 hover:text-blue-400 px-2 py-0.5 rounded bg-slate-900 border border-slate-800">
+                            Mute
+                        </button>
+                    </div>
+                    <div class="space-y-1">
+                        <div class="flex justify-between text-xs text-slate-400 font-mono">
+                            <span>Vol</span>
+                            <span id="vol-txt-T">100%</span>
+                        </div>
+                        <input type="range" id="vol-T" min="0" max="100" value="100" oninput="updateVolume('T', this.value)" class="w-full h-2 bg-slate-900 rounded-lg appearance-none cursor-pointer accent-blue-500">
+                    </div>
+                </div>
+
+                <!-- Bassi -->
+                <div class="bg-slate-950 p-4 rounded-xl border border-emerald-500/30 flex flex-col justify-between space-y-3">
+                    <div class="flex justify-between items-center">
+                        <span class="font-bold text-emerald-400 flex items-center gap-2 text-sm">
+                            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span> Bassi (B)
+                        </span>
+                        <button onclick="toggleMute('B')" id="mute-B" class="text-xs text-slate-400 hover:text-emerald-400 px-2 py-0.5 rounded bg-slate-900 border border-slate-800">
+                            Mute
+                        </button>
+                    </div>
+                    <div class="space-y-1">
+                        <div class="flex justify-between text-xs text-slate-400 font-mono">
+                            <span>Vol</span>
+                            <span id="vol-txt-B">100%</span>
+                        </div>
+                        <input type="range" id="vol-B" min="0" max="100" value="100" oninput="updateVolume('B', this.value)" class="w-full h-2 bg-slate-900 rounded-lg appearance-none cursor-pointer accent-emerald-500">
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-slate-950 border-t border-slate-900 py-4 text-center text-xs text-slate-600">
+        <p>Applicazione d'Esercitazione Corale - "Ave Maria" di Bepi De Marzi</p>
+    </footer>
+
+    <!-- SCRIPT MUSICALE E REPOSITORY DATI -->
+    <script>
+        /**
+         * DATI DELLA PARTITURA SATB ("Ave Maria" di Bepi De Marzi)
+         * MIDI Pitch: F3=53, G3=55, A3=57, Bb3=58, C4=60, D4=62, E4=64, F4=65, G4=67, A4=69, Bb4=70, C5=72
+         */
+        const scoreData = [
+            // Battuta 1
+            { m: 1, duration: 2, S: 65, C: 60, T: 57, B: 53, text: "A -" },
+            { m: 1, duration: 2, S: 67, C: 62, T: 57, B: 53, text: "ve" },
+            // Battuta 2
+            { m: 2, duration: 2, S: 69, C: 65, T: 60, B: 53, text: "Ma -" },
+            { m: 2, duration: 2, S: 69, C: 65, T: 60, B: 53, text: "ri -" },
+            { m: 2, duration: 2, S: 67, C: 64, T: 59, B: 55, text: "a," },
+            // Battuta 3
+            { m: 3, duration: 1.5, S: 65, C: 60, T: 57, B: 53, text: "pie -" },
+            { m: 3, duration: 0.5, S: 67, C: 62, T: 57, B: 53, text: "na" },
+            { m: 3, duration: 1, S: 69, C: 65, T: 60, B: 53, text: "di" },
+            { m: 3, duration: 1, S: 67, C: 64, T: 59, B: 55, text: "gra -" },
+            // Battuta 4
+            { m: 4, duration: 3, S: 65, C: 60, T: 57, B: 53, text: "zia," },
+            // Battuta 5
+            { m: 5, duration: 1, S: 65, C: 60, T: 57, B: 53, text: "il" },
+            { m: 5, duration: 1, S: 67, C: 62, T: 57, B: 53, text: "Si -" },
+            { m: 5, duration: 1, S: 69, C: 65, T: 60, B: 53, text: "gno -" },
+            { m: 5, duration: 1, S: 67, C: 64, T: 59, B: 55, text: "re" },
+            // Battuta 6
+            { m: 6, duration: 1, S: 65, C: 60, T: 57, B: 53, text: "è" },
+            { m: 6, duration: 1, S: 64, C: 59, T: 55, B: 52, text: "con" },
+            { m: 6, duration: 2, S: 65, C: 60, T: 57, B: 53, text: "te," },
+            // Battuta 7
+            { m: 7, duration: 1, S: 65, C: 60, T: 57, B: 53, text: "tu" },
+            { m: 7, duration: 1, S: 67, C: 62, T: 57, B: 53, text: "sei" },
+            { m: 7, duration: 1, S: 69, C: 65, T: 60, B: 53, text: "be -" },
+            { m: 7, duration: 1, S: 67, C: 64, T: 59, B: 55, text: "ne -" },
+            // Battuta 8
+            { m: 8, duration: 1, S: 65, C: 60, T: 57, B: 53, text: "det -" },
+            { m: 8, duration: 1, S: 67, C: 62, T: 57, B: 53, text: "ta" },
+            { m: 8, duration: 1, S: 69, C: 65, T: 60, B: 53, text: "fra" },
+            { m: 8, duration: 1, S: 70, C: 67, T: 62, B: 55, text: "tut -" },
+            // Battuta 9
+            { m: 9, duration: 1, S: 69, C: 65, T: 60, B: 53, text: "te" },
+            { m: 9, duration: 1, S: 67, C: 64, T: 59, B: 55, text: "le" },
+            { m: 9, duration: 2, S: 65, C: 60, T: 57, B: 53, text: "donne," },
+            // Battuta 10
+            { m: 10, duration: 1, S: 67, C: 62, T: 57, B: 53, text: "be -" },
+            { m: 10, duration: 1, S: 69, C: 65, T: 60, B: 53, text: "ne -" },
+            { m: 10, duration: 1, S: 67, C: 64, T: 59, B: 55, text: "det -" },
+            { m: 10, duration: 1, S: 65, C: 60, T: 57, B: 53, text: "to_il" },
+            // Battuta 11
+            { m: 11, duration: 1, S: 67, C: 62, T: 57, B: 53, text: "frut -" },
+            { m: 11, duration: 1, S: 69, C: 65, T: 60, B: 53, text: "to" },
+            { m: 11, duration: 1, S: 67, C: 64, T: 59, B: 55, text: "del" },
+            { m: 11, duration: 1, S: 65, C: 60, T: 57, B: 53, text: "se -" },
+            // Battuta 12
+            { m: 12, duration: 2, S: 67, C: 62, T: 57, B: 53, text: "no" },
+            { m: 12, duration: 2, S: 69, C: 65, T: 60, B: 53, text: "tuo," },
+            // Battuta 13
+            { m: 13, duration: 2, S: 72, C: 67, T: 64, B: 57, text: "Ge -" },
+            { m: 13, duration: 2, S: 70, C: 65, T: 62, B: 55, text: "sù." },
+            // Battuta 14
+            { m: 14, duration: 2, S: 69, C: 65, T: 60, B: 53, text: "A -" },
+            { m: 14, duration: 2, S: 67, C: 64, T: 59, B: 55, text: "men," },
+            // Battuta 15
+            { m: 15, duration: 4, S: 65, C: 60, T: 57, B: 53, text: "a-men." }
+        ];
+
+        const totalBeats = scoreData.reduce((acc, curr) => acc + curr.duration, 0);
+
+        /**
+         * STATO DELL'APPLICAZIONE & SINTETIZZATORE AUDIO
+         */
+        let audioCtx = null;
+        let isPlaying = false;
+        let isLooping = false;
+        let startTime = 0;
+        let pausedAt = 0;
+        let bpm = 60;
+        let transpose = 0;
+        let synthType = 'organ';
+        let viewMode = 'ALL'; // ALL, S, C, T, B
+        let scheduledNodes = [];
+        let animationFrameId = null;
+
+        const volumes = { S: 1.0, C: 1.0, T: 1.0, B: 1.0 };
+        const isMuted = { S: false, C: false, T: false, B: false };
+
+        function initAudio() {
+            if (!audioCtx) {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                audioCtx = new AudioContext();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        function midiToFreq(midi) {
+            return 440 * Math.pow(2, (midi + transpose - 69) / 12);
+        }
+
+        function playTone(freq, start, duration, voiceKey) {
+            if (!audioCtx || freq <= 0) return;
+            const vol = isMuted[voiceKey] ? 0 : volumes[voiceKey];
+            if (vol === 0) return;
+
+            const masterGain = audioCtx.createGain();
+            const attack = 0.08;
+            const release = 0.12;
+
+            masterGain.gain.setValueAtTime(0.0001, start);
+            masterGain.gain.linearRampToValueAtTime(vol * 0.22, start + attack);
+            masterGain.gain.setValueAtTime(vol * 0.22, start + Math.max(attack, duration - release));
+            masterGain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
+
+            masterGain.connect(audioCtx.destination);
+
+            if (synthType === 'organ') {
+                const osc1 = audioCtx.createOscillator();
+                const osc2 = audioCtx.createOscillator();
+                osc1.type = 'sine';
+                osc2.type = 'triangle';
+                osc1.frequency.setValueAtTime(freq, start);
+                osc2.frequency.setValueAtTime(freq * 2, start);
+
+                const subGain = audioCtx.createGain();
+                subGain.gain.value = 0.35;
+                osc2.connect(subGain);
+                
+                osc1.connect(masterGain);
+                subGain.connect(masterGain);
+
+                osc1.start(start);
+                osc2.start(start);
+                osc1.stop(start + duration);
+                osc2.stop(start + duration);
+                scheduledNodes.push(osc1, osc2);
+            } else if (synthType === 'warm') {
+                const osc = audioCtx.createOscillator();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(freq, start);
+
+                const filter = audioCtx.createBiquadFilter();
+                filter.type = 'lowpass';
+                filter.frequency.setValueAtTime(550, start);
+
+                osc.connect(filter);
+                filter.connect(masterGain);
+
+                osc.start(start);
+                osc.stop(start + duration);
+                scheduledNodes.push(osc);
+            } else {
+                const osc = audioCtx.createOscillator();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(freq, start);
+
+                masterGain.gain.setValueAtTime(vol * 0.35, start);
+                masterGain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
+
+                osc.connect(masterGain);
+                osc.start(start);
+                osc.stop(start + duration);
+                scheduledNodes.push(osc);
+            }
+        }
+
+        /**
+         * PLAYER CONTROLS
+         */
+        function togglePlay() {
+            initAudio();
+            if (isPlaying) {
+                pauseAudio();
+            } else {
+                startAudio();
+            }
+        }
+
+        function startAudio() {
+            if (isPlaying) return;
+            isPlaying = true;
+
+            document.getElementById('play-icon').className = 'fa-solid fa-pause text-2xl';
+            document.getElementById('audio-status').innerText = 'In Riproduzione';
+            document.getElementById('audio-status').className = 'text-[10px] font-medium text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20';
+
+            const secondsPerBeat = 60.0 / bpm;
+            startTime = audioCtx.currentTime - pausedAt;
+
+            let currentBeatOffset = 0;
+
+            scoreData.forEach((noteData) => {
+                const noteStartBeat = currentBeatOffset;
+                const noteDurationBeats = noteData.duration;
+                
+                const noteStartTime = startTime + (noteStartBeat * secondsPerBeat);
+                const noteDurationTime = noteDurationBeats * secondsPerBeat;
+
+                if (noteStartTime + noteDurationTime > audioCtx.currentTime) {
+                    const actualStart = Math.max(noteStartTime, audioCtx.currentTime);
+                    const actualDuration = noteDurationTime - (actualStart - noteStartTime);
+
+                    playTone(midiToFreq(noteData.S), actualStart, actualDuration, 'S');
+                    playTone(midiToFreq(noteData.C), actualStart, actualDuration, 'C');
+                    playTone(midiToFreq(noteData.T), actualStart, actualDuration, 'T');
+                    playTone(midiToFreq(noteData.B), actualStart, actualDuration, 'B');
+                }
+
+                currentBeatOffset += noteData.duration;
+            });
+
+            updateLoop();
+        }
+
+        function pauseAudio() {
+            if (!isPlaying) return;
+            isPlaying = false;
+
+            pausedAt = audioCtx.currentTime - startTime;
+            stopScheduledNodes();
+
+            document.getElementById('play-icon').className = 'fa-solid fa-play text-2xl ml-1';
+            document.getElementById('audio-status').innerText = 'In Pausa';
+            document.getElementById('audio-status').className = 'text-[10px] font-medium text-slate-400 bg-slate-500/10 px-2 py-0.5 rounded border border-slate-500/20';
+
+            if (animationFrameId) cancelAnimationFrame(animationFrameId);
+        }
+
+        function stopAudio() {
+            pauseAudio();
+            pausedAt = 0;
+            updateUI(0);
+            document.getElementById('audio-status').innerText = 'Pronto';
+            document.getElementById('audio-status').className = 'text-[10px] font-medium text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20';
+        }
+
+        function stopScheduledNodes() {
+            scheduledNodes.forEach(node => {
+                try { node.stop(); } catch(e){}
+            });
+            scheduledNodes = [];
+        }
+
+        function seekTo(percent) {
+            const secondsPerBeat = 60.0 / bpm;
+            const totalDuration = totalBeats * secondsPerBeat;
+            const targetTime = (percent / 100) * totalDuration;
+
+            const wasPlaying = isPlaying;
+            if (isPlaying) pauseAudio();
+
+            pausedAt = targetTime;
+            updateUI(targetTime);
+
+            if (wasPlaying) startAudio();
+        }
+
+        function toggleLoop() {
+            isLooping = !isLooping;
+            const btn = document.getElementById('btn-loop');
+            if (isLooping) {
+                btn.className = 'w-11 h-11 rounded-full bg-amber-500 text-slate-950 flex items-center justify-center transition active:scale-95 border border-amber-400 shadow-md';
+            } else {
+                btn.className = 'w-11 h-11 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-400 flex items-center justify-center transition active:scale-95 border border-slate-700';
+            }
+        }
+
+        function updateBPM(val) {
+            bpm = parseInt(val);
+            document.getElementById('bpm-val').innerText = bpm;
+            if (isPlaying) {
+                const currentSec = audioCtx.currentTime - startTime;
+                pauseAudio();
+                pausedAt = currentSec;
+                startAudio();
+            }
+        }
+
+        function updateTranspose(val) {
+            transpose = parseInt(val);
+            const keyNames = { '-2': 'MIb', '-1': 'MI', '0': 'FA (Orig.)', '1': 'FA#', '2': 'SOL' };
+            document.getElementById('key-val').innerText = keyNames[val] || 'FA';
+            if (isPlaying) {
+                const currentSec = audioCtx.currentTime - startTime;
+                pauseAudio();
+                pausedAt = currentSec;
+                startAudio();
+            }
+        }
+
+        function changeSynthSound(val) {
+            synthType = val;
+            if (isPlaying) {
+                const currentSec = audioCtx.currentTime - startTime;
+                pauseAudio();
+                pausedAt = currentSec;
+                startAudio();
+            }
+        }
+
+        function changeViewMode(val) {
+            viewMode = val;
+            renderStavesAndNotes();
+        }
+
+        /**
+         * UPDATE LOOP & KARAOKE HIGHLIGHT
+         */
+        function updateLoop() {
+            if (!isPlaying) return;
+
+            const elapsedSeconds = audioCtx.currentTime - startTime;
+            const secondsPerBeat = 60.0 / bpm;
+            const totalDuration = totalBeats * secondsPerBeat;
+
+            if (elapsedSeconds >= totalDuration) {
+                if (isLooping) {
+                    pauseAudio();
+                    pausedAt = 0;
+                    startAudio();
+                    return;
+                } else {
+                    stopAudio();
+                    return;
+                }
+            }
+
+            updateUI(elapsedSeconds);
+            animationFrameId = requestAnimationFrame(updateLoop);
+        }
+
+        function updateUI(elapsedSeconds) {
+            const secondsPerBeat = 60.0 / bpm;
+            const currentBeat = elapsedSeconds / secondsPerBeat;
+            const totalDuration = totalBeats * secondsPerBeat;
+
+            const seekPercent = Math.min(100, (elapsedSeconds / totalDuration) * 100);
+            document.getElementById('seek-bar').value = seekPercent;
+
+            document.getElementById('time-current').innerText = formatTime(elapsedSeconds);
+            document.getElementById('time-total').innerText = formatTime(totalDuration);
+
+            let accumulatedBeats = 0;
+            let currentNoteIndex = -1;
+
+            for (let i = 0; i < scoreData.length; i++) {
+                const note = scoreData[i];
+                if (currentBeat >= accumulatedBeats && currentBeat < accumulatedBeats + note.duration) {
+                    currentNoteIndex = i;
+                    break;
+                }
+                accumulatedBeats += note.duration;
+            }
+
+            if (currentNoteIndex !== -1) {
+                highlightKaraokeItem(currentNoteIndex);
+            }
+        }
+
+        function formatTime(sec) {
+            const m = Math.floor(sec / 60);
+            const s = Math.floor(sec % 60);
+            return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+        }
+
+        /**
+         * MIXER & PRESET CONTROL
+         */
+        function updateVolume(voice, val) {
+            volumes[voice] = parseFloat(val) / 100;
+            document.getElementById(`vol-txt-${voice}`).innerText = `${val}%`;
+            if (isPlaying) {
+                const currentSec = audioCtx.currentTime - startTime;
+                pauseAudio();
+                pausedAt = currentSec;
+                startAudio();
+            }
+        }
+
+        function toggleMute(voice) {
+            isMuted[voice] = !isMuted[voice];
+            const btn = document.getElementById(`mute-${voice}`);
+            if (isMuted[voice]) {
+                btn.className = 'text-xs text-red-400 bg-red-500/20 px-2 py-0.5 rounded border border-red-500/30 font-bold';
+                btn.innerText = 'MUTATO';
+            } else {
+                btn.className = 'text-xs text-slate-400 hover:text-white px-2 py-0.5 rounded bg-slate-900 border border-slate-800';
+                btn.innerText = 'Mute';
+            }
+            if (isPlaying) {
+                const currentSec = audioCtx.currentTime - startTime;
+                pauseAudio();
+                pausedAt = currentSec;
+                startAudio();
+            }
+        }
+
+        function selectPreset(preset) {
+            document.querySelectorAll('.preset-btn').forEach(btn => {
+                btn.className = 'preset-btn px-3 py-1.5 rounded-lg text-xs font-medium transition text-slate-300 hover:bg-slate-800';
+            });
+
+            document.getElementById(`preset-${preset}`).className = 'preset-btn px-3 py-1.5 rounded-lg text-xs font-semibold transition bg-amber-500 text-slate-950 shadow';
+
+            const voices = ['S', 'C', 'T', 'B'];
+            voices.forEach(v => {
+                isMuted[v] = false;
+                document.getElementById(`mute-${v}`).className = 'text-xs text-slate-400 hover:text-white px-2 py-0.5 rounded bg-slate-900 border border-slate-800';
+                document.getElementById(`mute-${v}`).innerText = 'Mute';
+
+                if (preset === 'ALL' || preset === v) {
+                    updateVolume(v, 100);
+                    document.getElementById(`vol-${v}`).value = 100;
+                } else {
+                    updateVolume(v, 15); // Altre voci in sottofondo (15%)
+                    document.getElementById(`vol-${v}`).value = 15;
+                }
+            });
+        }
+
+        /**
+         * RENDERING PENTAGRAMMI E NOTE SVG
+         */
+        const voiceConfig = {
+            S: { label: "Soprani", color: "#ec4899", clef: "🎼", basePitch: 65, yOffset: 60 },
+            C: { label: "Contralti", color: "#a855f7", clef: "🎼", basePitch: 60, yOffset: 140 },
+            T: { label: "Tenori", color: "#3b82f6", clef: "🎼", basePitch: 57, yOffset: 220 },
+            B: { label: "Bassi", color: "#10b981", clef: "𝄢", basePitch: 53, yOffset: 300 }
+        };
+
+        function renderStavesAndNotes() {
+            const bgContainer = document.getElementById('staves-background');
+            const notesContainer = document.getElementById('notes-container');
+            const textContainer = document.getElementById('karaoke-text');
+
+            bgContainer.innerHTML = '';
+            notesContainer.innerHTML = '';
+            textContainer.innerHTML = '';
+
+            const startX = 90;
+            const stepX = 28;
+
+            const visibleVoices = viewMode === 'ALL' ? ['S', 'C', 'T', 'B'] : [viewMode];
+
+            // 1. Disegna le linee dei pentagrammi per ogni voce visibile
+            visibleVoices.forEach((vKey, index) => {
+                const conf = voiceConfig[vKey];
+                const yBase = viewMode === 'ALL' ? conf.yOffset : 150;
+
+                // Etichetta Sezione
+                const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                label.setAttribute('x', 15);
+                label.setAttribute('y', yBase + 12);
+                label.setAttribute('fill', conf.color);
+                label.setAttribute('font-weight', 'bold');
+                label.setAttribute('font-size', '13');
+                label.textContent = conf.label;
+                bgContainer.appendChild(label);
+
+                // Chiave Musicale
+                const clef = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                clef.setAttribute('x', 60);
+                clef.setAttribute('y', yBase + 18);
+                clef.setAttribute('fill', '#94a3b8');
+                clef.setAttribute('font-size', vKey === 'B' ? '28' : '34');
+                clef.textContent = conf.clef;
+                bgContainer.appendChild(clef);
+
+                // 5 Linee del pentagramma
+                for (let i = -2; i <= 2; i++) {
+                    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                    line.setAttribute('x1', startX - 10);
+                    line.setAttribute('y1', yBase + (i * 8));
+                    line.setAttribute('x2', startX + (scoreData.length * stepX) + 15);
+                    line.setAttribute('y2', yBase + (i * 8));
+                    line.setAttribute('stroke', '#334155');
+                    line.setAttribute('stroke-width', '1.2');
+                    bgContainer.appendChild(line);
+                }
+            });
+
+            // 2. Disegna le Note e le Sillabe
+            scoreData.forEach((item, nIdx) => {
+                const posX = startX + (nIdx * stepX);
+
+                // Testo Sillaba sotto
+                const span = document.createElement('span');
+                span.id = `syllable-${nIdx}`;
+                span.innerText = item.text + " ";
+                span.className = 'cursor-pointer hover:text-amber-400 transition-all duration-150 px-1 py-0.5 rounded';
+                span.onclick = () => {
+                    const secondsPerBeat = 60.0 / bpm;
+                    let beatsBefore = 0;
+                    for (let i = 0; i < nIdx; i++) beatsBefore += scoreData[i].duration;
+                    seekTo((beatsBefore * secondsPerBeat / (totalBeats * secondsPerBeat)) * 100);
+                };
+                textContainer.appendChild(span);
+
+                // Disegna le note per ciascuna voce visibile
+                visibleVoices.forEach(vKey => {
+                    const conf = voiceConfig[vKey];
+                    const yBase = viewMode === 'ALL' ? conf.yOffset : 150;
+                    const pitch = item[vKey];
+
+                    // Calcolo verticale nota sul pentagramma
+                    const pitchDiff = pitch - conf.basePitch;
+                    const posY = yBase - (pitchDiff * 4);
+
+                    const noteHead = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
+                    noteHead.setAttribute('cx', posX);
+                    noteHead.setAttribute('cy', posY);
+                    noteHead.setAttribute('rx', 5);
+                    noteHead.setAttribute('ry', 3.8);
+                    noteHead.setAttribute('fill', conf.color);
+                    noteHead.setAttribute('transform', `rotate(-20 ${posX} ${posY})`);
+                    noteHead.setAttribute('id', `note-${vKey}-${nIdx}`);
+                    noteHead.setAttribute('class', 'note-head');
+
+                    // Gambo
+                    const stem = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                    stem.setAttribute('x1', posX + 4.5);
+                    stem.setAttribute('y1', posY);
+                    stem.setAttribute('x2', posX + 4.5);
+                    stem.setAttribute('y2', posY - 18);
+                    stem.setAttribute('stroke', conf.color);
+                    stem.setAttribute('stroke-width', '1.2');
+
+                    notesContainer.appendChild(noteHead);
+                    notesContainer.appendChild(stem);
+                });
+            });
+        }
+
+        function highlightKaraokeItem(index) {
+            document.querySelectorAll('.syllable-active').forEach(el => el.classList.remove('syllable-active'));
+            document.querySelectorAll('.note-active').forEach(el => el.classList.remove('note-active'));
+
+            const currentSyllable = document.getElementById(`syllable-${index}`);
+            if (currentSyllable) {
+                currentSyllable.classList.add('syllable-active');
+            }
+
+            ['S', 'C', 'T', 'B'].forEach(vKey => {
+                const note = document.getElementById(`note-${vKey}-${index}`);
+                if (note) {
+                    note.classList.add('note-active');
+                }
+            });
+
+            // Posiziona il Cursore Karaoke
+            const cursor = document.getElementById('karaoke-cursor');
+            const startX = 90;
+            const stepX = 28;
+            const posX = startX + (index * stepX);
+
+            cursor.setAttribute('x1', posX);
+            cursor.setAttribute('x2', posX);
+            cursor.classList.remove('opacity-0');
+
+            document.getElementById('measure-counter').innerHTML = `Battuta: <strong class="text-amber-400">${scoreData[index].m}</strong> / 15`;
+        }
+
+        window.onload = function() {
+            renderStavesAndNotes();
+        };
+    </script>
+</body>
+</html>
